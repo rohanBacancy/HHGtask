@@ -1,0 +1,11 @@
+.rootCounter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  max-width: 50%;
+}
+
+.buttonContainer > button {
+  margin: 5px;
+}
