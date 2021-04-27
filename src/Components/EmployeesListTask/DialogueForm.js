@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import Spinner from '../Loading Spinner/Spinner';
 const baseURL = process.env.REACT_APP_MOCKAPI_URI; //Getting BaseUrl Fron .env
 
-const DialogueForm = ({openForm,handleClose}) => {
+const DialogueForm = ({openForm,handleClose,notify}) => {
 
     const [employee, setEmployee] = useState(
         {
@@ -27,6 +27,7 @@ const DialogueForm = ({openForm,handleClose}) => {
             cleanForm(); //Clear form after successful submittion
             setLoading(false);
             handleClose(); //Close PopUp
+            notify();
         })
         .catch(err => {
             alert(err);
