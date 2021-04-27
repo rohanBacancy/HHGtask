@@ -1,22 +1,18 @@
 import React, { useState } from 'react'
-import AddEmployee from './AddEmployee'
 import EmployeesTable from './EmployeesTable'
+import './EmployeeList.css'
+import DialogueForm from './DialogueForm'
 
 const EmployeeList = () => {
 
-    const [flag, setFlag] = useState(false);
+    const [openForm,setOpenForm] = useState(false); //Form Popup open/close and API reCall Flag
+    const handleClose = () => setOpenForm(false); //Close PopUP Function
 
     return (
-        <>
-            <div>
-                <EmployeesTable flag={flag}/>
-            </div>
-            <hr/>
-            <div>
-                <AddEmployee setFlag={setFlag}/>
-            </div>
-            <button>+ New</button>
-        </>
+        <div className="empListDiv">
+                <EmployeesTable openForm={openForm} setOpenForm={setOpenForm}/>
+                <DialogueForm openForm={openForm} handleClose={handleClose}/>
+        </div>
     )
 }
 

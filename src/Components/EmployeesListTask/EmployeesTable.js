@@ -1,8 +1,11 @@
+import { Table, TableContainer, TableHead, TableCell,TableBody,TableRow,Paper, Typography, Button } from '@material-ui/core';
 import axios from 'axios';
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTable,usePagination } from 'react-table';
+import Spinner from '../Loading Spinner/Spinner';
+const baseURL = process.env.REACT_APP_MOCKAPI_URI; //Getting BaseUrl Fron .env
 
-const COLUMNS = [
+const COLUMNS = [ //React table headers 
         {
             Header:'Name',
             accessor:'name'
@@ -17,25 +20,33 @@ const COLUMNS = [
         },
     ]
 
-const EmployeesTable = ({flag}) => {
+const EmployeesTable = ({ openForm,setOpenForm }) => { //Used React Table liberary
 
-    const [employees, setEmployees] = useState([]);
+    const [employees, setEmployees] = useState([]); //API fetched data storage state
+    const [loading,setLoading] = useState(false); //Form Submit Loading State
 
     useEffect(() => {
-        axios.get("https://6086b37fa3b9c200173b698f.mockapi.io/users")
+        if(!openForm){ //When form is submitted Employees should be reFetched via API
+        setLoading(true); //Start Loading Spinner
+        axios.get(baseURL + "/users")
         .then(res => {
             setEmployees(res.data);
+            setLoading(false); //Stop Loading Spinner
+            setPageSize(5) //Initial Page size 5
         })
         .catch(err => {
             alert(err);
+            setLoading(false);
         })
-    }, [flag])
-
-    const columns = useMemo(() => COLUMNS,[]);
+    }}, [openForm])
+    
+    const columns = useMemo(() => COLUMNS,[]); //Static columns does't need to declared again on each render
+    
     const tableInstace = useTable({
         columns:columns,
         data:employees,
     }, usePagination)
+    
     const {
         getTableProps , 
         getTableBodyProps , 
@@ -43,52 +54,62 @@ const EmployeesTable = ({flag}) => {
         page , 
         prepareRow,
         nextPage,
-        pageOptions,
         setPageSize,
         state,
         previousPage,
         canNextPage,
-        canPreviousPage,} = tableInstace;
-    const { pageIndex,pageSize } = state;
+        canPreviousPage,
+    } = tableInstace;
+    
+    const { pageIndex } = state;
 
     return (
         <div>
-            <h1>Employees</h1>
+            <div className={"empListTitle"}><Typography variant={"h4"}>Employees List</Typography></div>
 
-            { employees && <table {...getTableProps()}>
-                <thead>
+            { loading ? <Spinner/> : 
+            <TableContainer variant={"outlined"} component={Paper} style={{maxWidth:'60vw'}}>
+            <Table {...getTableProps()}>
+                <TableHead>
                     { headerGroups.map((headerGroup) => 
-                    <tr {...headerGroup.getHeaderGroupProps()}>
+                    <TableRow {...headerGroup.getHeaderGroupProps()}>
                         {headerGroup.headers.map((column) => 
-                        <th {...column.getHeaderProps()}>
-                            {column.render('Header')}
-                        </th>
+                        <TableCell {...column.getHeaderProps()}>
+                            <Typography color="primary" variant={"h6"}>{column.render('Header')}</Typography>
+                        </TableCell>
                         )}
-                    </tr>
+                    </TableRow>
                     )}
-                </thead>
-                <tbody {...getTableBodyProps()}>
+                </TableHead>
+                <TableBody {...getTableBodyProps()}>
                     
                         {page.map((row) => 
                             {prepareRow(row)
                             return(
-                                <tr {...row.getRowProps()}>
+                                <TableRow {...row.getRowProps()}>
                                     {
                                         row.cells.map((cell) => 
                                         {
-                                            return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
+                                            return <TableCell {...cell.getCellProps()}><Typography variant={"subtitle1"}>{cell.render('Cell')}</Typography></TableCell>
                                         })
                                     }
-                                </tr>
+                                </TableRow>
                             )}
-                        )}
-                        
-                    
-                </tbody>
-            </table>}
+                        )}                   
+                </TableBody>
+            </Table>
+            </TableContainer>}
 
-                <span>Results Per Page <button onClick={() => setPageSize(5)}>5</button> | <button onClick={() => setPageSize(15)}>15</button> | <button onClick={() => setPageSize(20)} color={'link'}>20</button> </span>
-                <button disabled={!canPreviousPage} onClick={() => previousPage()}>Prev</button>{pageIndex+1}<button disabled={!canNextPage} onClick={() => nextPage()}>Next</button>
+                <div className="contentBelowTable">
+                    <span>
+                        <Button variant={"contained"} color={"primary"} onClick={() => setOpenForm(true)}>+ New</Button> {/* Open Popup Form Toggle */}
+                        &nbsp;&nbsp;Results Per Page 
+                        <Button onClick={() => setPageSize(5)} color={"secondary"}>5</Button> |  {/* To set size of employee data per page */}
+                        <Button onClick={() => setPageSize(15)} color={"secondary"}>15</Button> | 
+                        <Button onClick={() => setPageSize(20)} color={'secondary'}>20</Button> 
+                    </span>
+                    <Button disabled={!canPreviousPage} onClick={() => previousPage()} variant={"outlined"} color={"primary"}>Prev</Button> &nbsp; {pageIndex+1} &nbsp; <Button disabled={!canNextPage} onClick={() => nextPage()} variant={"outlined"} color={"primary"}>Next</Button>
+                </div>
         </div>
     )
 }
